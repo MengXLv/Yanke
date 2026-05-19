@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>羊羊网</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ========== 顶部导航 ========== -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="logo" onclick="showHome()">羊羊网</a>
+    <nav class="topbar-nav">
+      <a href="#" onclick="showHome()">首页</a>
+      <a href="#" onclick="showHotPosts()">热帖</a>
+      <a href="#" onclick="toggleSearch()">搜索</a>
+    </nav>
+    <div class="topbar-right" id="topbarRight">
+      <!-- 未登录 -->
+      <span id="guestBtns">
+        <button class="btn btn-outline" onclick="showLogin()">登录</button>
+        <button class="btn btn-primary" onclick="showRegister()">注册</button>
+      </span>
+      <!-- 已登录 -->
+      <span id="userBtns" style="display:none">
+        <a href="#" onclick="showCreatePost()" class="btn btn-primary">发帖</a>
+        <a href="#" onclick="showDrafts()" class="btn btn-outline btn-small">📝 草稿</a>
+        <span id="adminBtns" style="display:none">
+          <a href="#" onclick="showAdminPage()" class="btn btn-outline btn-small" style="color:#e74c3c">⚙ 管理</a>
+        </span>
+        <a href="#" onclick="showFriends()" class="btn btn-outline btn-small">👥 好友</a>
+        <a href="#" id="notifyBadge" onclick="showNotifications()" class="btn btn-outline btn-small" style="display:none">🔔<span id="unreadCount">0</span></a>
+        <a href="#" id="msgBadge" onclick="showConversations()" class="btn btn-outline btn-small" style="display:none">✉<span id="msgCount">0</span></a>
+        <a href="#" onclick="showSeckillPage()" class="btn btn-outline btn-small" style="color:#e74c3c">⚡ 秒杀</a>
+        <a href="#" onclick="showPointsPage()" class="btn btn-outline btn-small" style="display:none" id="pointsBtn">💰 <span id="pointsSpan">0</span></a>
+        <a href="#" onclick="showProfile()" class="user-link" style="padding:0 8px"><span id="navUsername"></span></a>
+        <a href="#" onclick="logout()" class="btn btn-outline btn-small">退出</a>
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ========== 搜索栏 ========== -->
+<div class="search-bar" id="searchBar" style="display:none">
+  <input type="text" id="searchInput" placeholder="搜索帖子标题或内容..." onkeydown="if(event.keyCode===13)doSearch()">
+  <button class="btn btn-primary" onclick="doSearch()">搜索</button>
+</div>
+
+<!-- ========== 主体 ========== -->
+<main class="container" id="mainContent">
+  <!-- 动态渲染 -->
+</main>
+
+<!-- ========== 模态框：登录 ========== -->
+<div class="modal" id="loginModal">
+  <div class="modal-card">
+    <span class="modal-close" onclick="closeModal('loginModal')">&times;</span>
+    <h2>登录</h2>
+    <div class="form-group">
+      <input type="text" id="loginAccount" placeholder="用户名 / 邮箱">
+    </div>
+    <div class="form-group">
+      <input type="password" id="loginPassword" placeholder="密码">
+    </div>
+    <div class="form-group captcha-row">
+      <input type="text" id="loginCaptcha" placeholder="验证码" style="width:60%">
+      <img id="loginCaptchaImg" src="" onclick="refreshCaptcha('login')" style="cursor:pointer;height:38px" title="点击刷新">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()">登录</button>
+  </div>
+</div>
+
+<!-- ========== 模态框：注册 ========== -->
+<div class="modal" id="registerModal">
+  <div class="modal-card">
+    <span class="modal-close" onclick="closeModal('registerModal')">&times;</span>
+    <h2>注册</h2>
+    <div class="form-group"><input type="text" id="regUsername" placeholder="用户名 (3-20位)"></div>
+    <div class="form-group"><input type="email" id="regEmail" placeholder="邮箱"></div>
+    <div class="form-group"><input type="password" id="regPassword" placeholder="密码 (6-32位)"></div>
+    <div class="form-group captcha-row">
+      <input type="text" id="regCaptcha" placeholder="验证码" style="width:60%">
+      <img id="regCaptchaImg" src="" onclick="refreshCaptcha('reg')" style="cursor:pointer;height:38px" title="点击刷新">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doRegister()">注册</button>
+    <p class="hint">注册后需前往邮箱点击激活链接</p>
+  </div>
+</div>
+
+<!-- ========== 模态框：发帖 ========== -->
+<div class="modal" id="createPostModal">
+  <div class="modal-card modal-lg">
+    <span class="modal-close" onclick="closeModal('createPostModal')">&times;</span>
+    <h2>发表帖子</h2>
+    <div id="catSelectContainer"></div>
+    <div class="form-group"><input type="text" id="postTitle" placeholder="标题 (2-100字)"></div>
+    <div class="form-group" style="margin-bottom:0">
+      <div class="md-toolbar" style="display:flex;flex-wrap:wrap;gap:2px;padding:4px 6px;border:1px solid #ddd;border-radius:6px 6px 0 0;background:#fafafa">
+        <button type="button" class="md-btn" title="加粗" onclick="insertMd('**','**')"><b>B</b></button>
+        <button type="button" class="md-btn" title="斜体" onclick="insertMd('*','*')"><i>I</i></button>
+        <button type="button" class="md-btn" title="删除线" onclick="insertMd('~~','~~')"><s>S</s></button>
+        <button type="button" class="md-btn" title="标题" onclick="insertMd('# ','')">H1</button>
+        <button type="button" class="md-btn" title="二级标题" onclick="insertMd('## ','')">H2</button>
+        <button type="button" class="md-btn" title="引用" onclick="insertMd('&gt; ','')">&#10077;</button>
+        <button type="button" class="md-btn" title="代码块" onclick="insertMd('\n```\n','\n```\n')">&lt;/&gt;</button>
+        <button type="button" class="md-btn" title="链接" onclick="insertMd('[','](url)')">&#128279;</button>
+        <button type="button" class="md-btn" title="列表" onclick="insertMd('- ','')">&#8226;</button>
+        <span style="flex:1"></span>
+        <input type="file" id="imageFile" accept="image/*" onchange="uploadPostImage()" style="display:none">
+        <button type="button" class="md-btn" title="上传图片" onclick="document.getElementById('imageFile').click();return false">&#128247;</button>
+        <button type="button" class="md-btn" id="previewBtn" title="预览" onclick="togglePreview()">&#128065; 预览</button>
+        <span id="uploadHint" style="font-size:11px;color:#999;margin-left:4px;line-height:28px"></span>
+      </div>
+      <textarea id="postContent" rows="10" placeholder="内容... 支持 Markdown 语法" style="border-radius:0 0 6px 6px;margin-top:0;border-top:none"></textarea>
+      <div id="mdPreview" style="display:none;min-height:200px;border:1px solid #ddd;border-top:none;border-radius:0 0 6px 6px;padding:12px;background:#fff;overflow-y:auto;font-size:14px;line-height:1.7"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="doCreatePost()">发布</button>
+      <button class="btn btn-outline" style="flex:1" onclick="saveAsDraft()">保存草稿</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Loading ========== -->
+<div id="loading" class="loading" style="display:none"><div class="spinner"></div></div>
+
+<!-- ========== Toast 提示 ========== -->
+<div id="toast" class="toast"></div>
+
+<script src="/js/app.js?v=4"></script>
+</body>
+</html>
